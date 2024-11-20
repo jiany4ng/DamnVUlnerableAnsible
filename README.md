@@ -1,6 +1,6 @@
 # DamnVUlnerableAnsible
 
-
+Damn vulnerable playbook to detect missconfigurations with checkov
 
 ## CHECKOV- Ansible Security Check Groups
 
