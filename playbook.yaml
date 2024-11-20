@@ -1,0 +1,63 @@
+---
+- name: Playbook to trigger all checks
+  hosts: localhost
+  tasks:
+    # Group 1: Certificate Validation
+    - name: URI with certificate validation disabled
+      ansible.builtin.uri:
+        url: "http://example.com"
+        validate_certs: no
+
+    - name: get_url with certificate validation disabled
+      ansible.builtin.get_url:
+        url: "http://example.com/file.txt"
+        validate_certs: no
+        dest: "/tmp/file.txt"
+
+    - name: yum with certificate validation disabled
+      ansible.builtin.yum:
+        name: "httpd"
+        state: present
+        validate_certs: no
+
+    - name: dnf with certificate validation disabled
+      ansible.builtin.dnf:
+        name: "nginx"
+        state: present
+        validate_certs: no
+
+    # Group 2: HTTPS Usage
+    - name: URI with HTTP URL instead of HTTPS
+      ansible.builtin.uri:
+        url: "http://example.com"
+
+    - name: get_url with HTTP URL instead of HTTPS
+      ansible.builtin.get_url:
+        url: "http://example.com/file.txt"
+        dest: "/tmp/file.txt"
+
+    # Group 3: GPG Signature Control
+    - name: yum with GPG check disabled
+      ansible.builtin.yum:
+        name: "httpd"
+        state: present
+        disable_gpg_check: yes
+
+    - name: dnf with GPG check disabled
+      ansible.builtin.dnf:
+        name: "nginx"
+        state: present
+        disable_gpg_check: yes
+
+    # Group 4: Insecure Parameters
+    - name: apt with force parameter
+      ansible.builtin.apt:
+        name: "curl"
+        state: present
+        force: yes
+
+    # Group 5: Error Handling in Blocks
+    - name: Block without error handling
+      block:
+        - name: Task inside a block
+          ansible.builtin.command: "false"

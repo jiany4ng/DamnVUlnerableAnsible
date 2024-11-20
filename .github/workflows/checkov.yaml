@@ -1,0 +1,29 @@
+name: Static Analysis Pipeline
+
+on:
+  push:  # Trigger on every commit to any path
+  pull_request:  # Optional: Trigger also on pull requests
+
+permissions:
+  contents: write
+  security-events: write  # Ensure the action can upload SARIF results    
+
+jobs:
+
+  static_analysis_Checkov:
+    name: 'Static Analysis'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Run Checkov PRISMA Policies
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: ansible
+          output_format: sarif
+          output_file_path: checkov
+        continue-on-error: true
