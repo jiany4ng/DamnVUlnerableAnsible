@@ -1,47 +1,77 @@
 ---
-- name: Playbook to trigger all checks
+- name: Trigger at least 30 misconfigurations
   hosts: localhost
   tasks:
-    # Group 1: Certificate Validation
-    - name: URI with certificate validation disabled
+    # URI Misconfigurations
+    - name: URI without certificate validation
       ansible.builtin.uri:
         url: "http://example.com"
         validate_certs: no
 
-    - name: get_url with certificate validation disabled
+    - name: URI using HTTP instead of HTTPS
+      ansible.builtin.uri:
+        url: "http://example.com"
+
+    - name: Block with URI without validation
+      block:
+        - name: Nested URI without validation
+          ansible.builtin.uri:
+            url: "http://example.com"
+            validate_certs: no
+
+    # get_url Misconfigurations
+    - name: get_url without certificate validation
       ansible.builtin.get_url:
         url: "http://example.com/file.txt"
         validate_certs: no
         dest: "/tmp/file.txt"
 
-    - name: yum with certificate validation disabled
+    - name: get_url using HTTP instead of HTTPS
+      ansible.builtin.get_url:
+        url: "http://example.com/file.txt"
+        dest: "/tmp/file.txt"
+
+    - name: Block with get_url without validation
+      block:
+        - name: Nested get_url without validation
+          ansible.builtin.get_url:
+            url: "http://example.com/file.txt"
+            validate_certs: no
+            dest: "/tmp/file.txt"
+
+    # yum Misconfigurations
+    - name: yum without certificate validation
       ansible.builtin.yum:
         name: "httpd"
         state: present
         validate_certs: no
 
-    - name: dnf with certificate validation disabled
-      ansible.builtin.dnf:
-        name: "nginx"
-        state: present
-        validate_certs: no
-
-    # Group 2: HTTPS Usage
-    - name: URI with HTTP URL instead of HTTPS
-      ansible.builtin.uri:
-        url: "http://example.com"
-
-    - name: get_url with HTTP URL instead of HTTPS
-      ansible.builtin.get_url:
-        url: "http://example.com/file.txt"
-        dest: "/tmp/file.txt"
-
-    # Group 3: GPG Signature Control
     - name: yum with GPG check disabled
       ansible.builtin.yum:
         name: "httpd"
         state: present
         disable_gpg_check: yes
+
+    - name: yum without SSL validation
+      ansible.builtin.yum:
+        name: "httpd"
+        state: present
+        sslverify: no
+
+    - name: Block with yum misconfiguration
+      block:
+        - name: Nested yum without SSL validation
+          ansible.builtin.yum:
+            name: "nginx"
+            state: present
+            sslverify: no
+
+    # dnf Misconfigurations
+    - name: dnf without certificate validation
+      ansible.builtin.dnf:
+        name: "nginx"
+        state: present
+        validate_certs: no
 
     - name: dnf with GPG check disabled
       ansible.builtin.dnf:
@@ -49,15 +79,52 @@
         state: present
         disable_gpg_check: yes
 
-    # Group 4: Insecure Parameters
-    - name: apt with force parameter
+    - name: dnf without SSL validation
+      ansible.builtin.dnf:
+        name: "nginx"
+        state: present
+        sslverify: no
+
+    - name: Block with dnf misconfiguration
+      block:
+        - name: Nested dnf without SSL validation
+          ansible.builtin.dnf:
+            name: "nginx"
+            state: present
+            sslverify: no
+
+    # apt Misconfigurations
+    - name: apt using force parameter
       ansible.builtin.apt:
         name: "curl"
         state: present
         force: yes
 
-    # Group 5: Error Handling in Blocks
+    - name: apt allowing unauthenticated packages
+      ansible.builtin.apt:
+        name: "curl"
+        state: present
+        allow_unauthenticated: yes
+
+    - name: Block with apt misconfiguration
+      block:
+        - name: Nested apt with unauthenticated packages
+          ansible.builtin.apt:
+            name: "wget"
+            state: present
+            allow_unauthenticated: yes
+
+    # Error Handling Misconfiguration
     - name: Block without error handling
       block:
-        - name: Task inside a block
+        - name: Command within a block
           ansible.builtin.command: "false"
+
+    # Nested Task Blocks
+    - name: Nested block misconfiguration
+      block:
+        - block:
+            - name: URI in nested block
+              ansible.builtin.uri:
+                url: "http://example.com"
+                validate_certs: no
